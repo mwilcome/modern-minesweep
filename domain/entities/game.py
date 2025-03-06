@@ -63,3 +63,7 @@ class Game:
                 if not cell.is_mine and not cell.is_revealed:
                     return
         self.won = True
+
+    def get_score(self):
+        """Calculate the score based on correctly flagged mines."""
+        return sum(1 for row in self.grid for cell in row if cell.is_mine and cell.is_flagged)
