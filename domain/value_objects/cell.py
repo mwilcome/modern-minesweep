@@ -6,12 +6,6 @@ class Cell:
         self.adjacent_mines = 0
 
     def toggle_flag(self):
-        """Toggle the flagged state of the cell if not revealed."""
+        """Toggle the flag state if the cell is not revealed."""
         if not self.is_revealed:
             self.is_flagged = not self.is_flagged
-
-    def reveal(self):
-        """Reveal the cell."""
-        if not self.is_flagged:
-            self.is_revealed = True
-            

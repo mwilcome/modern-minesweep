@@ -39,15 +39,16 @@ class Game:
                     self.grid[x][y].adjacent_mines = count
 
     def reveal_cell(self, row, col):
-        """Reveal a cell and handle game logic."""
+        """Reveal a cell and handle game logic. Returns 'win', 'lose', or None."""
         if self.game_over or self.won:
-            return
+            return None
         cell = self.grid[row][col]
         if not cell.is_revealed and not cell.is_flagged:
             cell.is_revealed = True
             if cell.is_mine:
                 self.game_over = True
                 self.end_time = pygame.time.get_ticks()
+                return 'lose'
             else:
                 if cell.adjacent_mines == 0:
                     for dx in [-1, 0, 1]:
@@ -58,6 +59,8 @@ class Game:
                 self._check_win_condition()
                 if self.won:
                     self.end_time = pygame.time.get_ticks()
+                    return 'win'
+        return None
 
     def _check_win_condition(self):
         """Check if all non-mine cells are revealed."""

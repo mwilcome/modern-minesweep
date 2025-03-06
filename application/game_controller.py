@@ -35,23 +35,20 @@ class GameController:
                         grid_row = (mouse_y - 50) // 50
                         grid_col = mouse_x // 50
                         if 0 <= grid_row < self.rows and 0 <= grid_col < self.cols:
-                            if event.button == 1:
-                                self.game.reveal_cell(grid_row, grid_col)
-                                if self.game.game_over:
+                            if event.button == 1:  # Left click
+                                game_ended = self.game.reveal_cell(grid_row, grid_col)
+                                if game_ended == 'lose':
                                     self.lose_sound.play()
-                                elif self.game.won:
+                                elif game_ended == 'win':
                                     self.win_sound.play()
                                 else:
                                     self.click_sound.play()
-                            elif event.button == 3:
+                            elif event.button == 3:  # Right click
                                 self.game.grid[grid_row][grid_col].toggle_flag()
                                 self.flag_sound.play()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
                         self.reset_game()
 
-            if self.game.game_over or self.game.won:
-                self.renderer.show_game_over(self.game.won)
-            else:
-                self.renderer.render(self.game, mouse_pos)
+            self.renderer.render(self.game, mouse_pos)
         pygame.quit()

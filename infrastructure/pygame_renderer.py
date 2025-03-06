@@ -17,6 +17,10 @@ class PygameRenderer:
         self.cell_dark = (100, 100, 100)
         self.text_color = (0, 0, 0)
         self.grid_line_color = (200, 200, 200)
+        self.flag_color = (0, 0, 255)
+        self.mine_color = (255, 0, 0)
+        self.revealed_color = (200, 200, 200)
+        self.unrevealed_color = (150, 150, 150)
 
         # Background gradient
         self.background = self.create_gradient_surface()
@@ -99,17 +103,17 @@ class PygameRenderer:
                 rect = pygame.Rect(x, y, self.cell_size, self.cell_size)
                 if cell.is_revealed:
                     if cell.is_mine:
-                        pygame.draw.rect(self.screen, (255, 0, 0), rect)
+                        pygame.draw.rect(self.screen, self.mine_color, rect)
                     else:
-                        pygame.draw.rect(self.screen, (200, 200, 200), rect)
+                        pygame.draw.rect(self.screen, self.revealed_color, rect)
                         if cell.adjacent_mines > 0:
                             text = self.cell_font.render(str(cell.adjacent_mines), True, self.text_color)
                             text_rect = text.get_rect(center=rect.center)
                             self.screen.blit(text, text_rect)
                 else:
-                    pygame.draw.rect(self.screen, (150, 150, 150), rect)
+                    pygame.draw.rect(self.screen, self.unrevealed_color, rect)
                 if cell.is_flagged:
-                    pygame.draw.circle(self.screen, (0, 0, 255), rect.center, 10)
+                    pygame.draw.circle(self.screen, self.flag_color, rect.center, 10)
 
         # Draw grid lines
         for i in range(game.cols + 1):
@@ -122,12 +126,35 @@ class PygameRenderer:
         # Hover effect
         grid_col = mouse_pos[0] // self.cell_size
         grid_row = (mouse_pos[1] - 50) // self.cell_size
-        if 0 <= grid_row < game.rows and 0 <= grid_col < game.cols:
+        if 0 <= grid_row < game.rows and 0 <= grid_col < game.cols and not (game.game_over or game.won):
             x = grid_col * self.cell_size
             y = 50 + grid_row * self.cell_size
             pygame.draw.rect(self.screen, (255, 255, 0), (x, y, self.cell_size, self.cell_size), 2)
 
+        # Win/Loss animations
+        if game.game_over or game.won:
+            self.render_game_end(game)
+
         pygame.display.flip()
+
+    def render_game_end(self, game):
+        """Render win or loss animation by revealing all mines."""
+        for row in range(game.rows):
+            for col in range(game.cols):
+                cell = game.grid[row][col]
+                x = col * self.cell_size
+                y = row * self.cell_size + 50
+                rect = pygame.Rect(x, y, self.cell_size, self.cell_size)
+                if cell.is_mine:
+                    if game.won:
+                        # Win animation: Show all mines as flagged
+                        pygame.draw.rect(self.screen, self.revealed_color, rect)
+                        pygame.draw.circle(self.screen, self.flag_color, rect.center, 10)
+                    else:
+                        # Loss animation: Flash mines red
+                        pygame.draw.rect(self.screen, self.mine_color, rect)
+                        pygame.draw.rect(self.screen, (255, 255, 255), rect, 2)  # White border for flash effect
+        self.show_game_over(game.won)
 
     def show_game_over(self, won):
         """Display game over or win message."""
@@ -135,4 +162,3 @@ class PygameRenderer:
         text = self.cell_font.render(message, True, (255, 0, 0))
         self.screen.blit(text, (self.width // 2 - text.get_width() // 2,
                                 50 + (self.height - 50) // 2 - text.get_height() // 2))
-        pygame.display.flip()
