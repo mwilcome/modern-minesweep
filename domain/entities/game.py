@@ -24,7 +24,7 @@ class Game:
                 mines_placed += 1
 
     def _calculate_numbers(self):
-        """Calculate the number of adjacent mines for each cell."""
+        """Calculate adjacent mine counts for each cell."""
         for x in range(self.rows):
             for y in range(self.cols):
                 if not self.grid[x][y].is_mine:
@@ -41,23 +41,19 @@ class Game:
             return
         cell = self.grid[row][col]
         if not cell.is_revealed and not cell.is_flagged:
-            cell.reveal()
+            cell.is_revealed = True
             if cell.is_mine:
                 self.game_over = True
             elif cell.adjacent_mines == 0:
-                self._flood_fill(row, col)
+                for dx in [-1, 0, 1]:
+                    for dy in [-1, 0, 1]:
+                        nr, nc = row + dx, col + dy
+                        if 0 <= nr < self.rows and 0 <= nc < self.cols:
+                            self.reveal_cell(nr, nc)
             self._check_win_condition()
 
-    def _flood_fill(self, row, col):
-        """Recursively reveal adjacent cells if the current cell has no adjacent mines."""
-        for dx in [-1, 0, 1]:
-            for dy in [-1, 0, 1]:
-                nr, nc = row + dx, col + dy
-                if 0 <= nr < self.rows and 0 <= nc < self.cols:
-                    self.reveal_cell(nr, nc)
-
     def _check_win_condition(self):
-        """Check if the player has won by revealing all non-mine cells."""
+        """Check if all non-mine cells are revealed."""
         for row in self.grid:
             for cell in row:
                 if not cell.is_mine and not cell.is_revealed:
@@ -65,5 +61,5 @@ class Game:
         self.won = True
 
     def get_score(self):
-        """Calculate the score based on correctly flagged mines."""
+        """Calculate score based on correctly flagged mines."""
         return sum(1 for row in self.grid for cell in row if cell.is_mine and cell.is_flagged)

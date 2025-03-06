@@ -18,18 +18,18 @@ class GameController:
         """Main game loop."""
         running = True
         while running:
-            # Process all events at the start, regardless of game state
+            mouse_pos = pygame.mouse.get_pos()  # Get mouse position for hover effects
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
-                    # Check if the click is on the restart button (example coordinates)
-                    if 5 <= mouse_y <= 45 and 10 <= mouse_x <= 110:
+                    # Check if restart button is clicked (top-left corner)
+                    if 5 <= mouse_y <= 45 and 10 <= mouse_x <= 50:
                         self.reset_game()
-                    # Only process grid clicks if the game is active
                     elif not self.game.game_over and not self.game.won:
-                        grid_row = (mouse_y - 50) // 50  # Adjust for UI offset
+                        # Adjust for UI offset (50px from top)
+                        grid_row = (mouse_y - 50) // 50
                         grid_col = mouse_x // 50
                         if 0 <= grid_row < self.rows and 0 <= grid_col < self.cols:
                             if event.button == 1:  # Left click
@@ -37,12 +37,13 @@ class GameController:
                             elif event.button == 3:  # Right click
                                 self.game.grid[grid_row][grid_col].toggle_flag()
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_r:  # Restart via 'R' key
+                    if event.key == pygame.K_r:  # Press 'R' to restart
                         self.reset_game()
 
-            # Render based on game state
+            # Render the game state
             if self.game.game_over or self.game.won:
                 self.renderer.show_game_over(self.game.won)
             else:
-                self.renderer.render(self.game)
+                self.renderer.render(self.game, mouse_pos)
+
         pygame.quit()
