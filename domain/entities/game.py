@@ -1,3 +1,4 @@
+import pygame
 import random
 from domain.value_objects.cell import Cell
 
@@ -10,6 +11,8 @@ class Game:
         self.grid = [[Cell() for _ in range(cols)] for _ in range(rows)]
         self.game_over = False
         self.won = False
+        self.start_time = pygame.time.get_ticks()
+        self.end_time = None
         self._place_mines()
         self._calculate_numbers()
 
@@ -24,7 +27,7 @@ class Game:
                 mines_placed += 1
 
     def _calculate_numbers(self):
-        """Calculate adjacent mine counts for each cell."""
+        """Calculate the number of adjacent mines for each cell."""
         for x in range(self.rows):
             for y in range(self.cols):
                 if not self.grid[x][y].is_mine:
@@ -44,13 +47,17 @@ class Game:
             cell.is_revealed = True
             if cell.is_mine:
                 self.game_over = True
-            elif cell.adjacent_mines == 0:
-                for dx in [-1, 0, 1]:
-                    for dy in [-1, 0, 1]:
-                        nr, nc = row + dx, col + dy
-                        if 0 <= nr < self.rows and 0 <= nc < self.cols:
-                            self.reveal_cell(nr, nc)
-            self._check_win_condition()
+                self.end_time = pygame.time.get_ticks()
+            else:
+                if cell.adjacent_mines == 0:
+                    for dx in [-1, 0, 1]:
+                        for dy in [-1, 0, 1]:
+                            nr, nc = row + dx, col + dy
+                            if 0 <= nr < self.rows and 0 <= nc < self.cols:
+                                self.reveal_cell(nr, nc)
+                self._check_win_condition()
+                if self.won:
+                    self.end_time = pygame.time.get_ticks()
 
     def _check_win_condition(self):
         """Check if all non-mine cells are revealed."""
@@ -60,6 +67,13 @@ class Game:
                     return
         self.won = True
 
+    def get_elapsed_time(self):
+        """Get the elapsed time in seconds."""
+        if self.game_over or self.won:
+            return (self.end_time - self.start_time) // 1000
+        else:
+            return (pygame.time.get_ticks() - self.start_time) // 1000
+
     def get_score(self):
-        """Calculate score based on correctly flagged mines."""
+        """Calculate the score based on correctly flagged mines."""
         return sum(1 for row in self.grid for cell in row if cell.is_mine and cell.is_flagged)
