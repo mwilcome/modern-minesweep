@@ -17,7 +17,6 @@ class Game:
         self._calculate_numbers()
 
     def _place_mines(self):
-        """Randomly place mines on the grid."""
         mines_placed = 0
         while mines_placed < self.mine_count:
             x = random.randint(0, self.rows - 1)
@@ -27,7 +26,6 @@ class Game:
                 mines_placed += 1
 
     def _calculate_numbers(self):
-        """Calculate the number of adjacent mines for each cell."""
         for x in range(self.rows):
             for y in range(self.cols):
                 if not self.grid[x][y].is_mine:
@@ -39,7 +37,6 @@ class Game:
                     self.grid[x][y].adjacent_mines = count
 
     def reveal_cell(self, row, col):
-        """Reveal a cell and handle game logic. Returns 'win', 'lose', or None."""
         if self.game_over or self.won:
             return None
         cell = self.grid[row][col]
@@ -63,7 +60,6 @@ class Game:
         return None
 
     def _check_win_condition(self):
-        """Check if all non-mine cells are revealed."""
         for row in self.grid:
             for cell in row:
                 if not cell.is_mine and not cell.is_revealed:
@@ -71,12 +67,10 @@ class Game:
         self.won = True
 
     def get_elapsed_time(self):
-        """Get the elapsed time in seconds."""
         if self.game_over or self.won:
             return (self.end_time - self.start_time) // 1000
         else:
             return (pygame.time.get_ticks() - self.start_time) // 1000
 
     def get_score(self):
-        """Calculate the score based on correctly flagged mines."""
         return sum(1 for row in self.grid for cell in row if cell.is_mine and cell.is_flagged)
